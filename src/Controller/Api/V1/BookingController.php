@@ -4,7 +4,6 @@ namespace App\Controller\Api\V1;
 
 use App\Entity\Booking;
 use App\Repository\BookingRepository;
-use App\Repository\UserRepository;
 use App\Service\CalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -117,5 +116,37 @@ class BookingController extends AbstractController
 
 
         return $this->json($newBooking, Response::HTTP_CREATED, [], ['groups' => 'booking:item']);
+    }
+
+
+    /**
+     * Deletes the current Booking.
+     * 
+     * @param Int $id
+     * @return JsonResponse
+     */
+    #[Route('/bookings/{id}', name: 'delete_booking', methods: ['DELETE'], requirements: ['id' => '\d+'] )]
+    public function delete(Int $id, BookingRepository $br): JsonResponse
+    {
+        // gets current User from JWT
+        $currentUser = $this->getUser();
+        
+        // gets current Booking from URL
+        $currentBooking = $br->findOneBy(['id' => $id]);
+
+        // validate the Booking ID sent in URL
+        if (is_null($currentBooking)) {
+            return $this->json(['error' => 'Booking not found !'], Response::HTTP_NOT_FOUND);
+        }
+        
+        // a User can only delete his own bookings
+        if (empty($br->findBy(['foodtruck' => $currentUser, 'id' => $id]))) {
+            return $this->json(['error' => 'Can\'t delete another user\'s reservations !'], Response::HTTP_FORBIDDEN);
+        }
+
+        // deletes the current Booking
+        $br->remove($currentBooking, true);
+
+        return $this->json(null, Response::HTTP_NO_CONTENT); 
     }
 }
