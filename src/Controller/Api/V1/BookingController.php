@@ -17,14 +17,33 @@ use Symfony\Component\Routing\Annotation\Route;
 class BookingController extends AbstractController
 {
     /**
+     * Gets the list of all Bookings of the current User.
+     * 
+     * @param BookingRepository $br
+     * @return JsonResponse
+     */
+    #[Route('/bookings', name: 'read_User_bookings', methods: ['GET'])]
+    public function browseBookings(BookingRepository $br): JsonResponse
+    {
+        // gets current User from JWT
+        $currentUser = $this->getUser();
+
+        // gets all the bookings for the current User
+        $userBookings = $br->findBy(['foodtruck' => $currentUser]);
+
+        return $this->json(['userBookings' => $userBookings], Response::HTTP_OK, [], ['groups' => 'booking:item']);
+    }
+
+
+    /**
      * Gets the list of the current date's Booking. Date format yyyymmdd.
      * 
      * @param String $date
      * @param BookingRepository $br
      * @return JsonResponse
      */
-    #[Route('/bookings/{date}', name: 'current_bookings', methods: ['GET'], requirements: ['date' => '\d{8}'])]
-    public function bookingsByDate(String $date = null, BookingRepository $br): JsonResponse
+    #[Route('/bookings/{date}', name: 'read_Date_bookings', methods: ['GET'], requirements: ['date' => '\d{8}'])]
+    public function readBooking(String $date = null, BookingRepository $br): JsonResponse
     {
         // gets all the booking for the current date
         $currentBookings = $br->findBy(['date' => new \DateTimeImmutable($date)]);
@@ -33,8 +52,8 @@ class BookingController extends AbstractController
     }
 
     
-    #[Route('/bookings', name: 'bookings_add', methods: ['POST'])]
-    public function add(
+    #[Route('/bookings', name: 'add_booking', methods: ['POST'])]
+    public function addBooking(
         Request $req,
         BookingRepository $br,
         EntityManagerInterface $em,
