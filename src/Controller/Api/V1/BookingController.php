@@ -50,7 +50,15 @@ class BookingController extends AbstractController
         return $this->json(['currentBookings' => $currentBookings], Response::HTTP_OK, [], ['groups' => 'booking:item']);
     }
 
-    
+    /**
+     * Adds a new booking.
+     *
+     * @param Request $req
+     * @param BookingRepository $br
+     * @param EntityManagerInterface $em
+     * @param CalendarManager $cm
+     * @return JsonResponse
+     */
     #[Route('/bookings', name: 'add_booking', methods: ['POST'])]
     public function addBooking(
         Request $req,
@@ -122,7 +130,7 @@ class BookingController extends AbstractController
     /**
      * Deletes the current Booking.
      * 
-     * @param Int $id
+     * @param Int $id, booking to remove
      * @return JsonResponse
      */
     #[Route('/bookings/{id}', name: 'delete_booking', methods: ['DELETE'], requirements: ['id' => '\d+'] )]
@@ -139,7 +147,7 @@ class BookingController extends AbstractController
             return $this->json(['error' => 'Booking not found !'], Response::HTTP_NOT_FOUND);
         }
         
-        // a User can only delete his own bookings
+        // a User can only delete their own bookings
         if (empty($br->findBy(['foodtruck' => $currentUser, 'id' => $id]))) {
             return $this->json(['error' => 'Can\'t delete another user\'s reservations !'], Response::HTTP_FORBIDDEN);
         }

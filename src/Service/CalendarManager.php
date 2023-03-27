@@ -23,7 +23,7 @@ class CalendarManager
   }
 
   /**
-   * Check if the user has already booked a spot in the same week. If he had, this method returns false.
+   * Checks if the user has already booked a spot in the same week. If he had, this method returns false.
    *
    * @param String $date
    * @param Array $bookingHistory
